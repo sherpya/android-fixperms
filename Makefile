@@ -2,6 +2,7 @@ TOPDIR = .
 CFLAGS  = -I$(TOPDIR) -I$(TOPDIR)/expat
 CFLAGS += -MD -MP
 CFLAGS += -Wall
+CFLAGS += -O0 -g3
 CFLAGS += -DHAVE_EXPAT_CONFIG_H
 
 SOURCES=$(wildcard $(TOPDIR)/*.c $(TOPDIR)/expat/*.c)
