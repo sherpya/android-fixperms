@@ -16,6 +16,7 @@ static char *blacklist[] =
 typedef struct _APackage
 {
     char name[PATH_MAX];
+    char codePath[PATH_MAX];
     int userId;
     int sharedUserId;
     int shared;
@@ -49,7 +50,13 @@ static void startElement(void *userData, const XML_Char *name, const XML_Char **
         if (!strcmp(attrs[i], "name"))
             strncpy(package->name, attrs[i + 1], sizeof(package->name));
         else if (!strcmp(attrs[i], "codePath"))
-            package->skip = blCheck(attrs[i + 1]);
+        {
+            strncpy(package->codePath, attrs[i + 1], sizeof(package->codePath));
+            if (!strncmp(package->codePath, "/system/app/", 12))
+                package->skip = 1;
+            else
+                package->skip = blCheck(package->codePath);
+        }
         else if (!strcmp(attrs[i], "userId"))
             package->userId = atoi(attrs[i + 1]);
         else if (!strcmp(attrs[i], "sharedUserId"))
@@ -68,10 +75,16 @@ static void endElement(void *userData, const XML_Char *name)
     APackage *package = (APackage *) userData;
     if (package->skip)
     {
-        printf("Skipping %s\n", package->name);
+        //printf("Skipping %s\n", package->codePath);
         return;
     }
-    printf("%s - userId: %d - sharedUserId: %d - is shared %d\n", package->name, package->userId, package->sharedUserId, package->shared);
+
+    printf("[%s] codePath: %s ", package->name, package->codePath);
+    if (package->shared)
+        printf("sharedUserId: %d", package->sharedUserId);
+    else
+        printf("userId: %d", package->userId);
+    printf("\n");
 }
 
 int main(void)
