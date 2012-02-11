@@ -5,6 +5,9 @@
 #include <limits.h>
 #include <expat.h>
 
+
+/* refs: frameworks/base/services/java/com/android/server/pm */
+
 #define PACKAGES "packages.xml"
 //#define PACKAGES "/data/system/packages.xml"
 
