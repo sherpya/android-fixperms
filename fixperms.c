@@ -205,7 +205,7 @@ done:
     XML_ParserFree(parser);
 
 	hashmapForEach(packages, dumpPackage, NULL);
-	printf("\nPackages: %lu\n", hashmapSize(packages));
+	printf("\nPackages: %u\n", (int) hashmapSize(packages));
 
 	if (argc == 2)
 	{
