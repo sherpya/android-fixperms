@@ -5,6 +5,9 @@ CFLAGS += -Wall
 CFLAGS += -O0 -g3
 CFLAGS += -DHAVE_EXPAT_CONFIG_H
 
+#CC=arm-linux-androideabi-gcc
+#LDFLAGS = -static
+
 SOURCES=$(wildcard $(TOPDIR)/*.c $(TOPDIR)/expat/*.c)
 OBJECTS=$(SOURCES:.c=.o)
 

@@ -23,13 +23,33 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <limits.h>
 #include <expat.h>
+
+#include "hashmap.h"
 
 #define PACKAGES "packages.xml"
 //#define PACKAGES "/data/system/packages.xml"
 
-static char *blacklist[] =
+/* system/core/libcutils/str_parms.c */
+static bool str_eq(void *key_a, void *key_b)
+{
+    return !strcmp((const char *) key_a, (const char *)key_b);
+}
+
+/* use djb hash unless we find it inadequate */
+static int str_hash_fn(void *str)
+{
+    uint32_t hash = 5381;
+    char *p;
+
+    for (p = str; p && *p; p++)
+        hash = ((hash << 5) + hash) + *p;
+    return (int) hash;
+}
+
+static const char *blacklist[] =
 {
     "framework-res.apk",
     "com.htc.resources.apk",
@@ -72,8 +92,9 @@ static bool blCheck(const char *codePath)
     return false;
 }
 
-static void dumpPackage(APackage *package)
+static bool dumpPackage(void *key, void *value, void *context)
 {
+	APackage *package = (APackage *) value;
     printf("[%s] codePath:%s ", package->name, package->codePath);
 
     if (package->shared)
@@ -84,6 +105,7 @@ static void dumpPackage(APackage *package)
     printf("version:%d ", package->version);
     printf("flags:%d ", package->flags);
     printf("\n");
+	return true;
 }
 
 #define TYPE_string(var) strncpy(package->var, attrs[i + 1], sizeof(package->var))
@@ -98,12 +120,13 @@ static void startElement(void *userData, const XML_Char *name, const XML_Char **
 {
     int i;
     APackage *package;
+	Hashmap *packages;
+	void *oldval;
 
     if (strcmp(name, "package"))
         return;
 
-    package = (APackage *) userData;
-    memset(package, 0, sizeof(*package));
+    package = (APackage *) calloc(1, sizeof(APackage));
     package->userId = package->sharedUserId = -1;
 
     for (i = 0; attrs[i]; i += 2)
@@ -121,28 +144,32 @@ static void startElement(void *userData, const XML_Char *name, const XML_Char **
         else IFATTR(sharedUserId, int)
         else IFATTR(flags, int)
 
-        package->skip = blCheck(package->codePath);
         package->shared = (package->sharedUserId != -1);
         package->system = !strncmp(package->codePath, "/system/app/", 12);
     }
+
+	packages = (Hashmap *) userData;
+	if ((oldval = hashmapPut(packages, package->name, package)))
+		free(oldval);
 }
 
 static void endElement(void *userData, const XML_Char *name)
 {
-    if (strcmp(name, "package"))
-        return;
-
-    APackage *package = (APackage *) userData;
-    dumpPackage(package);
 }
 
 int main(void)
 {
-    APackage package;
     char buffer[BUFSIZ];
     FILE *fd;
     size_t len;
     int res = 0;
+	Hashmap *packages = hashmapCreate(100,  str_hash_fn, str_eq);
+
+	if (!packages)
+	{
+		fprintf(stderr, "Memory allocation failed (hashmap)\n");
+		return -1;
+	}
 
     XML_Parser parser = XML_ParserCreate(NULL);
 
@@ -153,14 +180,14 @@ int main(void)
     }
 
     XML_SetElementHandler(parser, startElement, endElement);
-    XML_SetUserData(parser, &package);
+    XML_SetUserData(parser, packages);
+
 
     if (!(fd = fopen(PACKAGES, "r")))
     {
         perror("fopen");
         return -1;
     }
-
     
     while ((len = fread(buffer, 1, sizeof(buffer), fd)) > 0)
     {
@@ -176,6 +203,9 @@ done:
     fclose(fd);
     XML_Parse(parser, NULL, 0, 1);
     XML_ParserFree(parser);
+
+	hashmapForEach(packages, dumpPackage, NULL);
+
     return res;
 
 }
