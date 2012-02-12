@@ -157,7 +157,7 @@ static void endElement(void *userData, const XML_Char *name)
 {
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     char buffer[BUFSIZ];
     FILE *fd;
@@ -205,7 +205,16 @@ done:
     XML_ParserFree(parser);
 
 	hashmapForEach(packages, dumpPackage, NULL);
+	printf("\nPackages: %lu\n", hashmapSize(packages));
+
+	if (argc == 2)
+	{
+		APackage *package = (APackage *) hashmapGet(packages, argv[1]);
+		if (package)
+			dumpPackage(NULL, package, NULL);
+		else
+			printf("Package %s not found\n", argv[1]);
+	}
 
     return res;
-
 }
