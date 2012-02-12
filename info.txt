@@ -1,0 +1,11 @@
+
+/data/data/package.apk			app:app		751
+/data/app-private/package.apk	system:app	640
+
+/data/data/package/
+lib				system:system	755/755 (*.so nodesc)
+databases		app:app			771/660 (*.db nodesc)
+shared_prefs	app:app			771/660 (*.xml nodesc)
+cache			app:app			771
+cache/*			app:app			700/600
+*				app:app			711/600 (also files in top level)
