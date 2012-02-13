@@ -94,7 +94,7 @@ static bool blCheck(const char *codePath)
 
 static bool dumpPackage(void *key, void *value, void *context)
 {
-	APackage *package = (APackage *) value;
+    APackage *package = (APackage *) value;
     printf("[%s] codePath:%s ", package->name, package->codePath);
 
     if (package->shared)
@@ -105,7 +105,7 @@ static bool dumpPackage(void *key, void *value, void *context)
     printf("version:%d ", package->version);
     printf("flags:%d ", package->flags);
     printf("\n");
-	return true;
+    return true;
 }
 
 #define TYPE_string(var) strncpy(package->var, attrs[i + 1], sizeof(package->var))
@@ -120,8 +120,8 @@ static void startElement(void *userData, const XML_Char *name, const XML_Char **
 {
     int i;
     APackage *package;
-	Hashmap *packages;
-	void *oldval;
+    Hashmap *packages;
+    void *oldval;
 
     if (strcmp(name, "package"))
         return;
@@ -148,9 +148,9 @@ static void startElement(void *userData, const XML_Char *name, const XML_Char **
         package->system = !strncmp(package->codePath, "/system/app/", 12);
     }
 
-	packages = (Hashmap *) userData;
-	if ((oldval = hashmapPut(packages, package->name, package)))
-		free(oldval);
+    packages = (Hashmap *) userData;
+    if ((oldval = hashmapPut(packages, package->name, package)))
+        free(oldval);
 }
 
 static void endElement(void *userData, const XML_Char *name)
@@ -163,13 +163,13 @@ int main(int argc, char *argv[])
     FILE *fd;
     size_t len;
     int res = 0;
-	Hashmap *packages = hashmapCreate(100,  str_hash_fn, str_eq);
+    Hashmap *packages = hashmapCreate(100,  str_hash_fn, str_eq);
 
-	if (!packages)
-	{
-		fprintf(stderr, "Memory allocation failed (hashmap)\n");
-		return -1;
-	}
+    if (!packages)
+    {
+        fprintf(stderr, "Memory allocation failed (hashmap)\n");
+        return -1;
+    }
 
     XML_Parser parser = XML_ParserCreate(NULL);
 
@@ -204,17 +204,17 @@ done:
     XML_Parse(parser, NULL, 0, 1);
     XML_ParserFree(parser);
 
-	hashmapForEach(packages, dumpPackage, NULL);
-	printf("\nPackages: %u\n", (int) hashmapSize(packages));
+    hashmapForEach(packages, dumpPackage, NULL);
+    printf("\nPackages: %u\n", (int) hashmapSize(packages));
 
-	if (argc == 2)
-	{
-		APackage *package = (APackage *) hashmapGet(packages, argv[1]);
-		if (package)
-			dumpPackage(NULL, package, NULL);
-		else
-			printf("Package %s not found\n", argv[1]);
-	}
+    if (argc == 2)
+    {
+        APackage *package = (APackage *) hashmapGet(packages, argv[1]);
+        if (package)
+            dumpPackage(NULL, package, NULL);
+        else
+            printf("Package %s not found\n", argv[1]);
+    }
 
     return res;
 }
