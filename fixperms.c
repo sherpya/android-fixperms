@@ -108,6 +108,12 @@ static bool dumpPackage(void *key, void *value, void *context)
     return true;
 }
 
+static bool freePackage(void *key, void *value, void *context)
+{
+    free(value);
+    return true;
+}
+
 #define TYPE_string(var) strncpy(package->var, attrs[i + 1], sizeof(package->var))
 #define TYPE_time(var) package->var = strtoull(attrs[i + 1], NULL, 16)
 #define TYPE_int(var) package->var = atoi(attrs[i + 1])
@@ -163,7 +169,7 @@ int main(int argc, char *argv[])
     FILE *fd;
     size_t len;
     int res = 0;
-    Hashmap *packages = hashmapCreate(100,  str_hash_fn, str_eq);
+    Hashmap *packages = hashmapCreate(500, str_hash_fn, str_eq);
 
     if (!packages)
     {
@@ -216,5 +222,7 @@ done:
             printf("Package %s not found\n", argv[1]);
     }
 
+    hashmapForEach(packages, freePackage, NULL);
+    hashmapFree(packages);
     return res;
 }
