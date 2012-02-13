@@ -143,10 +143,10 @@ static void startElement(void *userData, const XML_Char *name, const XML_Char **
         else IFATTR(userId, int)
         else IFATTR(sharedUserId, int)
         else IFATTR(flags, int)
-
-        package->shared = (package->sharedUserId != -1);
-        package->system = !strncmp(package->codePath, "/system/app/", 12);
     }
+
+    package->shared = (package->sharedUserId != -1);
+    package->system = !strncmp(package->codePath, "/system/app/", 12);
 
     packages = (Hashmap *) userData;
     if ((oldval = hashmapPut(packages, package->name, package)))
