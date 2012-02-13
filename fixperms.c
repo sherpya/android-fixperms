@@ -35,7 +35,7 @@
 /* system/core/libcutils/str_parms.c */
 static bool str_eq(void *key_a, void *key_b)
 {
-    return !strcmp((const char *) key_a, (const char *)key_b);
+    return !strcmp((const char *) key_a, (const char *) key_b);
 }
 
 /* use djb hash unless we find it inadequate */
