@@ -43,7 +43,6 @@ typedef struct _APK
 
     bool system;
     bool shared;
-    bool skip;
 } APK;
 
 extern Hashmap *readPackages(const char *filename);
