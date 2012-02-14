@@ -22,11 +22,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <limits.h>
 #include <expat.h>
 
+#include "fixperms.h"
 #include "hashmap.h"
 
 #define PACKAGES "packages.xml"
@@ -48,31 +47,6 @@ static int str_hash_fn(void *str)
         hash = ((hash << 5) + hash) + *p;
     return (int) hash;
 }
-
-typedef struct _APK
-{
-    char name[PATH_MAX];
-    char realName[PATH_MAX];
-    char codePath[PATH_MAX];
-
-    time_t ft;      /* timeStamp (hex) */
-    time_t it;      /* firstInstallTime (hex) */
-    time_t ut;      /* lastUpdateTime (hex) */
-
-    int version;    /* versionCode */
-
-    char resourcePath[PATH_MAX];
-    char nativeLibraryPath[PATH_MAX];
-
-    int userId;
-    int sharedUserId;
-
-    int flags;      /* pkgFlags */
-
-    bool system;
-    bool shared;
-    bool skip;
-} APK;
 
 static bool blCheck(const char *codePath)
 {
@@ -163,26 +137,27 @@ static void endElement(void *userData, const XML_Char *name)
 {
 }
 
-int main(int argc, char *argv[])
+Hashmap *readPackages(const char *filename)
 {
+    Hashmap *packages = NULL;
     char buffer[BUFSIZ];
-    FILE *fd;
     size_t len;
-    int res = 0;
-    Hashmap *packages = hashmapCreate(500, str_hash_fn, str_eq);
-
-    if (!packages)
-    {
-        fprintf(stderr, "Memory allocation failed (hashmap)\n");
-        return -1;
-    }
+    FILE *fd;
 
     XML_Parser parser = XML_ParserCreate(NULL);
 
     if (!parser)
     {
-        fprintf(stderr, "Memory allocation failed (ParserCreate)\n");
-        return -1;
+        fprintf(stderr, "Memory allocation failed (XML_ParserCreate)\n");
+        return NULL;
+    }
+
+    packages = hashmapCreate(500, str_hash_fn, str_eq);
+
+    if (!packages)
+    {
+        fprintf(stderr, "Memory allocation failed (hashmapCreate)\n");
+        return NULL;
     }
 
     XML_SetElementHandler(parser, startElement, endElement);
@@ -192,7 +167,8 @@ int main(int argc, char *argv[])
     if (!(fd = fopen(PACKAGES, "r")))
     {
         perror("fopen");
-        return -1;
+        hashmapFree(packages);
+        return NULL;
     }
     
     while ((len = fread(buffer, 1, sizeof(buffer), fd)) > 0)
@@ -200,7 +176,9 @@ int main(int argc, char *argv[])
         if (XML_Parse(parser, buffer, len, 0) == XML_STATUS_ERROR)
         {
             fprintf(stderr, "%s at line %lu\n", XML_ErrorString(XML_GetErrorCode(parser)), XML_GetCurrentLineNumber(parser));
-            res = -1;
+            hashmapForEach(packages, freePackage, NULL);
+            hashmapFree(packages);
+            packages = NULL;
             goto done;
         }
     }
@@ -209,6 +187,16 @@ done:
     fclose(fd);
     XML_Parse(parser, NULL, 0, 1);
     XML_ParserFree(parser);
+
+    return packages;
+}
+
+int main(int argc, char *argv[])
+{
+    Hashmap *packages;
+
+    if (!(packages = readPackages(PACKAGES)))
+        return -1;
 
     hashmapForEach(packages, dumpPackage, NULL);
     printf("\nPackages: %u\n", (int) hashmapSize(packages));
@@ -224,5 +212,5 @@ done:
 
     hashmapForEach(packages, freePackage, NULL);
     hashmapFree(packages);
-    return res;
+    return 0;
 }
