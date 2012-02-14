@@ -95,7 +95,7 @@ bool checkCodePath(APK *package)
 
     if (!perm)
     {
-        fprintf(stderr, "Sorry, I don't known to handle codePath: %s\n", package->codePath);
+        fprintf(stderr, "Sorry, I don't known how to handle codePath: %s\n", package->codePath);
         return false;
     }
 
