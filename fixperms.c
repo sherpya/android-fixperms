@@ -49,14 +49,7 @@ static int str_hash_fn(void *str)
     return (int) hash;
 }
 
-static const char *blacklist[] =
-{
-    "framework-res.apk",
-    "com.htc.resources.apk",
-    NULL
-};
-
-typedef struct _APackage
+typedef struct _APK
 {
     char name[PATH_MAX];
     char realName[PATH_MAX];
@@ -79,10 +72,17 @@ typedef struct _APackage
     bool system;
     bool shared;
     bool skip;
-} APackage;
+} APK;
 
 static bool blCheck(const char *codePath)
 {
+    static const char *blacklist[] =
+    {
+        "framework-res.apk",
+        "com.htc.resources.apk",
+        NULL
+    };
+
     int i;
     for (i = 0; blacklist[i]; i++)
     {
@@ -94,7 +94,7 @@ static bool blCheck(const char *codePath)
 
 static bool dumpPackage(void *key, void *value, void *context)
 {
-    APackage *package = (APackage *) value;
+    APK *package = (APK *) value;
     printf("[%s] codePath:%s ", package->name, package->codePath);
 
     if (package->shared)
@@ -125,14 +125,14 @@ static bool freePackage(void *key, void *value, void *context)
 static void startElement(void *userData, const XML_Char *name, const XML_Char **attrs)
 {
     int i;
-    APackage *package;
+    APK *package;
     Hashmap *packages;
     void *oldval;
 
     if (strcmp(name, "package"))
         return;
 
-    package = (APackage *) calloc(1, sizeof(APackage));
+    package = (APK *) calloc(1, sizeof(APK));
     package->userId = package->sharedUserId = -1;
 
     for (i = 0; attrs[i]; i += 2)
@@ -215,7 +215,7 @@ done:
 
     if (argc == 2)
     {
-        APackage *package = (APackage *) hashmapGet(packages, argv[1]);
+        APK *package = (APK *) hashmapGet(packages, argv[1]);
         if (package)
             dumpPackage(NULL, package, NULL);
         else
