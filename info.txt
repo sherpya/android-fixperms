@@ -1,6 +1,6 @@
 
-/data/data/package.apk			app:app		751
-/data/app-private/package.apk	system:app	640
+/data/data/package.apk			system:system   751
+/data/app-private/package.apk	system:app	    640
 
 /data/data/package/
 lib				system:system	755/755 (*.so nodesc)

@@ -45,9 +45,13 @@ typedef struct _APK
     bool shared;
 } APK;
 
+/* packages.c */
 extern Hashmap *readPackages(const char *filename);
 extern bool dumpPackage(void *key, void *value, void *context);
 extern bool freePackage(void *key, void *value, void *context);
 extern bool blCheck(const char *codePath);
 
+/* perms.c */
+extern bool initUsers(void);
+extern bool checkPackage(void *key, void *value, void *context);
 #endif /* _FIXPERMS_H */

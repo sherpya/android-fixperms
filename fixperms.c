@@ -38,17 +38,21 @@ int main(int argc, char *argv[])
     if (!(packages = readPackages(PACKAGES)))
         return -1;
 
-    hashmapForEach(packages, dumpPackage, NULL);
-    printf("\nPackages: %u\n", (int) hashmapSize(packages));
+    //hashmapForEach(packages, dumpPackage, NULL);
+    printf("Found packages: %u\n", (int) hashmapSize(packages));
+
+    initUsers();
 
     if (argc == 2)
     {
         APK *package = (APK *) hashmapGet(packages, argv[1]);
         if (package)
-            dumpPackage(NULL, package, NULL);
+            checkPackage(NULL, package, NULL);
         else
             printf("Package %s not found\n", argv[1]);
     }
+    else
+        hashmapForEach(packages, checkPackage, NULL);
 
     hashmapForEach(packages, freePackage, NULL);
     hashmapFree(packages);
