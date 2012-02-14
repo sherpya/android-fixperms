@@ -19,6 +19,7 @@
 
 #include <limits.h>
 #include <stdbool.h>
+#include "hashmap.h"
 
 typedef struct _APK
 {
@@ -44,5 +45,10 @@ typedef struct _APK
     bool shared;
     bool skip;
 } APK;
+
+extern Hashmap *readPackages(const char *filename);
+extern bool dumpPackage(void *key, void *value, void *context);
+extern bool freePackage(void *key, void *value, void *context);
+extern bool blCheck(const char *codePath);
 
 #endif /* _FIXPERMS_H */
