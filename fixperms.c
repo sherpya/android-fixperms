@@ -25,8 +25,11 @@
 #include "fixperms.h"
 #include "hashmap.h"
 
+#ifdef __ANDROID__
+#define PACKAGES "/data/system/packages.xml"
+#else
 #define PACKAGES "packages.xml"
-//#define PACKAGES "/data/system/packages.xml"
+#endif
 
 int main(int argc, char *argv[])
 {
