@@ -47,9 +47,10 @@ typedef struct _permission
 static const permission permissions [] =
 {
         { "/data/app/",         &sysuid,    &sysgid,    0644 },
+        { "/data/app-private/", &sysuid,    &appuid,    0640 },
         { "/system/app/",       &rootuid,   &rootgid,   0644 },
         { "/system/framework/", &rootuid,   &rootgid,   0644 },
-        { "/data/app-private/", &sysuid,    &appuid,    0640 }
+        { "/mnt/asec/",         &sysuid,    &rootgid,   0555 }
 };
 
 #define PERMISSION_MAX sizeof(permissions) / sizeof(permission)
