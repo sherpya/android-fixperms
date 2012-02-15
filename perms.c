@@ -32,7 +32,6 @@
 static uid_t sysuid;
 static gid_t sysgid;
 static uid_t appuid;
-static gid_t appgid;
 
 const static uid_t rootuid = 0;
 const static gid_t rootgid = 0;
