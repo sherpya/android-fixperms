@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -99,7 +100,7 @@ bool checkCodePath(APK *package)
         return false;
     }
 
-    printf("codePath %s uid %lu/%lu - perm %o:", package->codePath, info.st_uid, info.st_gid, mode);
+    printf("codePath %s uid %u/%u - perm %o:", package->codePath, (unsigned int) info.st_uid, (unsigned int) info.st_gid, mode);
 
     if ((info.st_uid != *perm->uid) || (info.st_gid != *perm->gid))
     {
