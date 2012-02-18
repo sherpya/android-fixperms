@@ -76,7 +76,7 @@ bool checkCodePath(APK *package)
     /* codePath */
     if (stat(package->codePath, &info) < 0)
     {
-        perror("stat");
+        perror(package->codePath);
         return false;
     }
 
